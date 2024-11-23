@@ -16,4 +16,5 @@ export default defineConfig({
     outDir: "docs",
     emptyOutDir: true,
   },
+  base: "/notsorry/",
 });

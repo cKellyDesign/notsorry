@@ -12,8 +12,7 @@ import {
 } from "reduxjs-toolkit-persist";
 import { PersistConfig, Persistor } from "reduxjs-toolkit-persist/lib/types";
 import storage from "reduxjs-toolkit-persist/lib/storage";
-import { sessionSlice, sessionSliceName } from "./session";
-import { countSlice, countSliceName } from "./count";
+import { deckSlice, deckSliceName } from "./deck";
 
 export const persistConfig: PersistConfig<any> = {
   key: "vite-mpa-react-bootstrap-redux-toolkit",
@@ -21,8 +20,7 @@ export const persistConfig: PersistConfig<any> = {
 };
 
 export const rootReducer = combineReducers({
-  [sessionSliceName]: sessionSlice.reducer,
-  [countSliceName]: countSlice.reducer,
+  [deckSliceName]: deckSlice.reducer,
 });
 
 export const persistedReducer = persistReducer(persistConfig, rootReducer);

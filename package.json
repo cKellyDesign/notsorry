@@ -1,12 +1,12 @@
 {
-  "name": "@accessitech/vite-serverless-react-bootstrap-redux-toolkit",
+  "name": "@ckellydesign/notsorry",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "start": "yarn dev",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && cp docs/index.html docs/404.html",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },

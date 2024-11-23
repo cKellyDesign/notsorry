@@ -79,3 +79,9 @@ button:focus-visible {
   width: 100vw;
   height: 100vh;
 }
+
+.dropdown > button {
+  width: 100%;
+  background-color: transparent;
+  border: none;
+}

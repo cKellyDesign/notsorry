@@ -22,6 +22,9 @@ export const App = () => {
 
   useEffect(() => {
     const skipUpdatePlayer = (isUndo ? currentCard : deck.drawnCards[deck.drawnCards.length - 1]) === "2"
+    setTimeout(() => {
+      setDrawing(false);
+    }, 125);
     if (skipUpdatePlayer) {
       return;
     }
@@ -31,9 +34,6 @@ export const App = () => {
       setActivePlayer(playerColors.length - 1);
     }
     setIsUndo(false);
-    setTimeout(() => {
-      setDrawing(false);
-    }, 250);
   }, [currentCard]);
 
   return (
@@ -58,7 +58,7 @@ export const App = () => {
               setIsUndo(true);
               setTimeout(() => {
                 store.dispatch(undoDraw(""));
-              }, 250);
+              }, 125);
             }}>Undo</Button>
         </Col>
       </Row>
@@ -71,18 +71,26 @@ export const App = () => {
             justifyContent: "center",
             alignItems: "center",
             height: "100%",
-            transition: "opacity 0.25s",
-            opacity: drawing ? 0 : 1,
+            transition: "opacity 0.125s",
+            opacity: drawing ? 0.1 : 1,
           } as any)}
             href="" onClick={(e) => {
               e.preventDefault();
               setDrawing(true);
               setTimeout(() => {
                 store.dispatch(drawCard(""));
-              }, 250);
+              }, 125);
             }}>
             <h1>{currentCard || "Draw a card!"}</h1>
           </a>
+        </Col>
+      </Row>
+      <Row style={{ flexShrink: 1 }}>
+        <Col>
+            <p style={{ textAlign: "center" }}>Draw Pile: {deck.cards.length}</p>
+        </Col>
+        <Col>
+            <p style={{ textAlign: "center" }}>Discard Pile: {deck.drawnCards.length}</p>
         </Col>
       </Row>
       <Row style={{ flexShrink: 1 }}>
@@ -90,8 +98,10 @@ export const App = () => {
           <Col key={index} style={{ flexGrow: 1 }}>
             <Dropdown style={{
               width: "100%",
-              backgroundColor: color,
+              backgroundColor: activePlayer === index ? color : "white",
+              border: `3px solid ${color}`,
               opacity: activePlayer === index ? "1" : "0.5",
+              borderRadius: "10px",
             }} >
               <Dropdown.Toggle>{`Player ${index + 1}`}</Dropdown.Toggle>
               <Dropdown.Menu>
@@ -125,6 +135,7 @@ export const App = () => {
             style={{
               width: "100%",
               opacity: "50%",
+              border: "3px solid #0d6efd",
             }}
             onClick={() => {
               if (playerColors.length < 4) {

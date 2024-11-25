@@ -1,7 +1,7 @@
 import { Button, Col, Container, Dropdown, Row } from "react-bootstrap";
 import store from "../store/store";
 import { drawCard, resetDeck, undoDraw, useDeck } from "../store/deck";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export const colors = ["red", "blue", "green", "yellow"];
 
@@ -13,12 +13,24 @@ export const getNewColors = (playerColors: string[], newColor: string, index: nu
 
 export const App = () => {
   const deck = useDeck() || {};
-  console.log(deck)
   const { currentCard } = deck;
 
   const [playerColors, setPlayerColors] = useState(["red", "blue"]);
   const [activePlayer, setActivePlayer] = useState(Math.floor(Math.random() * playerColors.length));
+  const [isUndo, setIsUndo] = useState(false);
 
+  useEffect(() => {
+    const skipUpdatePlayer = (isUndo ? currentCard : deck.drawnCards[deck.drawnCards.length - 1]) === "2"
+    if (skipUpdatePlayer) {
+      return;
+    }
+    if (activePlayer > 0) {
+      setActivePlayer(activePlayer - 1);
+    } else {
+      setActivePlayer(playerColors.length - 1);
+    }
+    setIsUndo(false);
+  }, [currentCard]);
 
   return (
     <Container style={{ height: "100%", display: "flex", flexDirection: "column" }}>
@@ -39,11 +51,7 @@ export const App = () => {
               width: "100%",
             }} variant="light" onClick={() => {
               store.dispatch(undoDraw(""));
-              if (activePlayer > 0) {
-                setActivePlayer(activePlayer - 1);
-              } else {
-                setActivePlayer(playerColors.length - 1);
-              }
+              setIsUndo(true);
             }}>Undo</Button>
         </Col>
       </Row>
@@ -51,22 +59,17 @@ export const App = () => {
       {/* Current Card Row showing the current card */}
       <Row style={{ flexGrow: 1 }}>
         <Col style={{ alignContent: "center" }}>
-          <a style={{
+          <a style={({
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
             height: "100%",
-          }}
+          } as any)}
             href="" onClick={(e) => {
               e.preventDefault();
               store.dispatch(drawCard(""));
-              if (activePlayer < playerColors.length - 1) {
-                setActivePlayer(activePlayer + 1);
-              } else {
-                setActivePlayer(0);
-              }
             }}>
-            <h1>{currentCard || "Draw a card"}</h1>
+            <h1>{currentCard || "Draw a card!"}</h1>
           </a>
         </Col>
       </Row>

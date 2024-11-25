@@ -42,7 +42,6 @@ export const deckSlice: Slice<any, SliceCaseReducers<any>, string> = createSlice
             }
             state.currentCard = state.cards[0];
             state.cards.shift();
-            console.log(state.currentCard);
         },
         [RESET_DECK]: (state) => {
             state.cards = shuffle(unshuffeledDeck);

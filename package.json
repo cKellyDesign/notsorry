@@ -6,9 +6,9 @@
   "scripts": {
     "dev": "vite",
     "start": "yarn dev",
-    "build": "tsc && vite build && cp docs/index.html docs/404.html",
+    "build": "tsc && VITE_APP_ENV=production vite build && cp docs/index.html docs/404.html",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "VITE_APP_ENV=production vite preview"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.9.5",

@@ -1,7 +1,7 @@
 import { Button, Col, Container, Dropdown, Row } from "react-bootstrap";
 import store from "../store/store";
 import { drawCard, resetDeck, undoDraw, useDeck } from "../store/deck";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export const colors = ["red", "blue", "green", "yellow"];
 
@@ -13,12 +13,28 @@ export const getNewColors = (playerColors: string[], newColor: string, index: nu
 
 export const App = () => {
   const deck = useDeck() || {};
-  console.log(deck)
   const { currentCard } = deck;
 
   const [playerColors, setPlayerColors] = useState(["red", "blue"]);
   const [activePlayer, setActivePlayer] = useState(Math.floor(Math.random() * playerColors.length));
+  const [isUndo, setIsUndo] = useState(false);
+  const [drawing, setDrawing] = useState(false);
 
+  useEffect(() => {
+    const skipUpdatePlayer = (isUndo ? currentCard : deck.drawnCards[deck.drawnCards.length - 1]) === "2"
+    setTimeout(() => {
+      setDrawing(false);
+    }, 125);
+    if (skipUpdatePlayer) {
+      return;
+    }
+    if (activePlayer > 0) {
+      setActivePlayer(activePlayer - 1);
+    } else {
+      setActivePlayer(playerColors.length - 1);
+    }
+    setIsUndo(false);
+  }, [currentCard]);
 
   return (
     <Container style={{ height: "100%", display: "flex", flexDirection: "column" }}>
@@ -38,12 +54,11 @@ export const App = () => {
             style={{
               width: "100%",
             }} variant="light" onClick={() => {
-              store.dispatch(undoDraw(""));
-              if (activePlayer > 0) {
-                setActivePlayer(activePlayer - 1);
-              } else {
-                setActivePlayer(playerColors.length - 1);
-              }
+              setDrawing(true);
+              setIsUndo(true);
+              setTimeout(() => {
+                store.dispatch(undoDraw(""));
+              }, 125);
             }}>Undo</Button>
         </Col>
       </Row>
@@ -51,23 +66,31 @@ export const App = () => {
       {/* Current Card Row showing the current card */}
       <Row style={{ flexGrow: 1 }}>
         <Col style={{ alignContent: "center" }}>
-          <a style={{
+          <a style={({
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
             height: "100%",
-          }}
+            transition: "opacity 0.125s",
+            opacity: drawing ? 0.1 : 1,
+          } as any)}
             href="" onClick={(e) => {
               e.preventDefault();
-              store.dispatch(drawCard(""));
-              if (activePlayer < playerColors.length - 1) {
-                setActivePlayer(activePlayer + 1);
-              } else {
-                setActivePlayer(0);
-              }
+              setDrawing(true);
+              setTimeout(() => {
+                store.dispatch(drawCard(""));
+              }, 125);
             }}>
-            <h1>{currentCard || "Draw a card"}</h1>
+            <h1>{currentCard || "Draw a card!"}</h1>
           </a>
+        </Col>
+      </Row>
+      <Row style={{ flexShrink: 1 }}>
+        <Col>
+            <p style={{ textAlign: "center" }}>Draw Pile: {deck.cards.length}</p>
+        </Col>
+        <Col>
+            <p style={{ textAlign: "center" }}>Discard Pile: {deck.drawnCards.length}</p>
         </Col>
       </Row>
       <Row style={{ flexShrink: 1 }}>
@@ -75,8 +98,10 @@ export const App = () => {
           <Col key={index} style={{ flexGrow: 1 }}>
             <Dropdown style={{
               width: "100%",
-              backgroundColor: color,
+              backgroundColor: activePlayer === index ? color : "white",
+              border: `3px solid ${color}`,
               opacity: activePlayer === index ? "1" : "0.5",
+              borderRadius: "10px",
             }} >
               <Dropdown.Toggle>{`Player ${index + 1}`}</Dropdown.Toggle>
               <Dropdown.Menu>
@@ -110,6 +135,7 @@ export const App = () => {
             style={{
               width: "100%",
               opacity: "50%",
+              border: "3px solid #0d6efd",
             }}
             onClick={() => {
               if (playerColors.length < 4) {

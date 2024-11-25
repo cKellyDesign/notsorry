@@ -1,50 +1,50 @@
 import { Button, Col, Container, Dropdown, Row } from "react-bootstrap";
 import store from "../store/store";
-import { drawCard, resetDeck, undoDraw, useDeck } from "../store/deck";
+import { drawCard, resetDeck, undoDraw, useCurrentCard, useDeck } from "../store/deck";
 import { useEffect, useState } from "react";
-
-export const colors = ["red", "blue", "green", "yellow"];
-
-export const getNewColors = (playerColors: string[], newColor: string, index: number) => {
-  const newColors: string[] = [...playerColors];
-  newColors[index] = newColor;
-  return newColors;
-}
+import { addPlayer, lastTurn, nextTurn, Player, removePlayer, resetPlayers, setPlayerColor, useCurrentPlayerIndex, usePlayers } from "../store/players";
 
 export const App = () => {
   const deck = useDeck() || {};
-  const { currentCard } = deck;
+  const currentCard = useCurrentCard();
+  const players = usePlayers();
+  const activePlayer = useCurrentPlayerIndex();
+  const playerColors = players.map((player:Player) => player.color);
 
-  const [playerColors, setPlayerColors] = useState(["red", "blue"]);
-  const [activePlayer, setActivePlayer] = useState(Math.floor(Math.random() * playerColors.length));
   const [isUndo, setIsUndo] = useState(false);
   const [drawing, setDrawing] = useState(false);
 
   useEffect(() => {
-    const skipUpdatePlayer = (isUndo ? currentCard : deck.drawnCards[deck.drawnCards.length - 1]) === "2"
     setTimeout(() => {
       setDrawing(false);
     }, 125);
+    
+    // Skip updating the player if the current card is a 2
+    const skipUpdatePlayer = (isUndo ? currentCard : deck.drawnCards[deck.drawnCards.length - 1])?.type === "2"
     if (skipUpdatePlayer) {
       return;
     }
-    if (activePlayer > 0) {
-      setActivePlayer(activePlayer - 1);
+
+    if (isUndo) {
+      store.dispatch(lastTurn(""));
     } else {
-      setActivePlayer(playerColors.length - 1);
+      store.dispatch(nextTurn(""));
     }
+
     setIsUndo(false);
   }, [currentCard]);
 
   return (
     <Container style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+      
+      {/* End Game and Undo Row */}
       <Row style={{ flexShrink: 1 }}>
         <Col>
           <Button style={{
             width: "100%",
           }} variant="danger" onClick={() => {
             store.dispatch(resetDeck(""));
-            setActivePlayer(Math.floor(Math.random() * playerColors.length));
+            store.dispatch(resetPlayers(""));
           }}>End Game</Button>
         </Col>
 
@@ -68,8 +68,10 @@ export const App = () => {
         <Col style={{ alignContent: "center" }}>
           <a style={({
             display: "flex",
+            flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
+            gap: "1rem",
             height: "100%",
             transition: "opacity 0.125s",
             opacity: drawing ? 0.1 : 1,
@@ -81,25 +83,30 @@ export const App = () => {
                 store.dispatch(drawCard(""));
               }, 125);
             }}>
-            <h1>{currentCard || "Draw a card!"}</h1>
+            <h1 style={{ textAlign: "center", fontSize: "8rem", lineHeight: "0.8" }}>{currentCard ? currentCard.type : "Draw a card!"}</h1>
+            {currentCard && <p style={{ textAlign: "center" }}>{currentCard.text}</p>}
           </a>
         </Col>
       </Row>
+
+      {/* Draw and Discard Pile Row showing the number of cards in each pile */}
       <Row style={{ flexShrink: 1 }}>
         <Col>
-            <p style={{ textAlign: "center" }}>Draw Pile: {deck.cards.length}</p>
+          <p style={{ textAlign: "center" }}>Draw Pile: {deck.cards.length}</p>
         </Col>
         <Col>
-            <p style={{ textAlign: "center" }}>Discard Pile: {deck.drawnCards.length}</p>
+          <p style={{ textAlign: "center" }}>Discard Pile: {deck.drawnCards.length}</p>
         </Col>
       </Row>
+
+      {/* Player Color Row showing the players */}
       <Row style={{ flexShrink: 1 }}>
-        {playerColors.map((color, index) => (
+        {players.map((player: Player, index:number) => (
           <Col key={index} style={{ flexGrow: 1 }}>
             <Dropdown style={{
               width: "100%",
-              backgroundColor: activePlayer === index ? color : "white",
-              border: `3px solid ${color}`,
+              backgroundColor: activePlayer === index ? player.color : "white",
+              border: `3px solid ${player.color}`,
               opacity: activePlayer === index ? "1" : "0.5",
               borderRadius: "10px",
             }} >
@@ -107,25 +114,22 @@ export const App = () => {
               <Dropdown.Menu>
                 <Dropdown.Item
                   disabled={playerColors.includes("red")}
-                  onClick={() => setPlayerColors(getNewColors(playerColors, "red", index))}
+                  onClick={() => store.dispatch(setPlayerColor({color: "red", index}))}
                 >Red</Dropdown.Item>
                 <Dropdown.Item
                   disabled={playerColors.includes("blue")}
-                  onClick={() => setPlayerColors(getNewColors(playerColors, "blue", index))}
+                  onClick={() => store.dispatch(setPlayerColor({color: "blue", index}))}
                 >Blue</Dropdown.Item>
                 <Dropdown.Item
                   disabled={playerColors.includes("green")}
-                  onClick={() => setPlayerColors(getNewColors(playerColors, "green", index))}
+                  onClick={() => store.dispatch(setPlayerColor({color: "green", index}))}
                 >Green</Dropdown.Item>
                 <Dropdown.Item
                   disabled={playerColors.includes("yellow")}
-                  onClick={() => setPlayerColors(getNewColors(playerColors, "yellow", index))}
+                  onClick={() => store.dispatch(setPlayerColor({color: "yellow", index}))}
                 >Yellow</Dropdown.Item>
-                <Dropdown.Item onClick={() => {
-                  const newPlayers = [...playerColors];
-                  newPlayers.splice(index, 1);
-                  setPlayerColors(newPlayers);
-                }} >Remove</Dropdown.Item>
+                <Dropdown.Item onClick={() => store.dispatch(removePlayer({color: player.color}))}
+                >Remove</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
           </Col>
@@ -139,7 +143,7 @@ export const App = () => {
             }}
             onClick={() => {
               if (playerColors.length < 4) {
-                setPlayerColors([...playerColors, colors.find(color => !playerColors.includes(color)) || "red"]);
+                store.dispatch(addPlayer(""))
               }
             }}
           >Add Player</Button>

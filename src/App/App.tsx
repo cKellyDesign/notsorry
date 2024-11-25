@@ -18,6 +18,7 @@ export const App = () => {
   const [playerColors, setPlayerColors] = useState(["red", "blue"]);
   const [activePlayer, setActivePlayer] = useState(Math.floor(Math.random() * playerColors.length));
   const [isUndo, setIsUndo] = useState(false);
+  const [drawing, setDrawing] = useState(false);
 
   useEffect(() => {
     const skipUpdatePlayer = (isUndo ? currentCard : deck.drawnCards[deck.drawnCards.length - 1]) === "2"
@@ -30,6 +31,9 @@ export const App = () => {
       setActivePlayer(playerColors.length - 1);
     }
     setIsUndo(false);
+    setTimeout(() => {
+      setDrawing(false);
+    }, 250);
   }, [currentCard]);
 
   return (
@@ -50,8 +54,11 @@ export const App = () => {
             style={{
               width: "100%",
             }} variant="light" onClick={() => {
-              store.dispatch(undoDraw(""));
+              setDrawing(true);
               setIsUndo(true);
+              setTimeout(() => {
+                store.dispatch(undoDraw(""));
+              }, 250);
             }}>Undo</Button>
         </Col>
       </Row>
@@ -64,10 +71,15 @@ export const App = () => {
             justifyContent: "center",
             alignItems: "center",
             height: "100%",
+            transition: "opacity 0.25s",
+            opacity: drawing ? 0 : 1,
           } as any)}
             href="" onClick={(e) => {
               e.preventDefault();
-              store.dispatch(drawCard(""));
+              setDrawing(true);
+              setTimeout(() => {
+                store.dispatch(drawCard(""));
+              }, 250);
             }}>
             <h1>{currentCard || "Draw a card!"}</h1>
           </a>

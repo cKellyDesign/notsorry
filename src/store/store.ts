@@ -13,6 +13,7 @@ import {
 import { PersistConfig, Persistor } from "reduxjs-toolkit-persist/lib/types";
 import storage from "reduxjs-toolkit-persist/lib/storage";
 import { deckSlice, deckSliceName } from "./deck";
+import { playerSlice, playersSliceName } from "./players";
 
 export const persistConfig: PersistConfig<any> = {
   key: "vite-mpa-react-bootstrap-redux-toolkit",
@@ -21,6 +22,7 @@ export const persistConfig: PersistConfig<any> = {
 
 export const rootReducer = combineReducers({
   [deckSliceName]: deckSlice.reducer,
+  [playersSliceName]: playerSlice.reducer,
 });
 
 export const persistedReducer = persistReducer(persistConfig, rootReducer);
